@@ -1,8 +1,8 @@
 function getSearchTermFromLocation() {
-  var sPageURL = window.location.search.substring(1);
-  var sURLVariables = sPageURL.split('&');
-  for (var i = 0; i < sURLVariables.length; i++) {
-    var sParameterName = sURLVariables[i].split('=');
+  const sPageURL = window.location.search.substring(1);
+  const sURLVariables = sPageURL.split('&');
+  for (let url = 0; url < sURLVariables.length; url++) {
+    var sParameterName = sURLVariables[url].split('=');
     if (sParameterName[0] == 'q') {
       return decodeURIComponent(sParameterName[1].replace(/\+/g, '%20'));
     }
@@ -10,15 +10,12 @@ function getSearchTermFromLocation() {
 }
 
 function joinUrl (base, path) {
-  if (path.substring(0, 1) === "/") {
-    // path starts with `/`. Thus it is absolute.
-    return path;
-  }
-  if (base.substring(base.length-1) === "/") {
-    // base ends with `/`
-    return base + path;
-  }
-  return base + "/" + path;
+  path.substring(0, 1) === "/" // path starts with `/`.
+  ? path
+  : base.substring(base.length-1) === "/" // base ends with `/`
+    ? path = base + path;
+    : path = base + "/" + path;
+  return path;
 }
 
 function formatResult (location, title, summary) {
@@ -26,14 +23,14 @@ function formatResult (location, title, summary) {
 }
 
 function displayResults (results) {
-  var search_results = document.getElementById("mkdocs-search-results");
+  const search_results = document.getElementById("mkdocs-search-results");
   while (search_results.firstChild) {
     search_results.removeChild(search_results.firstChild);
   }
   if (results.length > 0){
-    for (var i=0; i < results.length; i++){
-      var result = results[i];
-      var html = formatResult(result.location, result.title, result.summary);
+    for (let result = 0; result < results.length; result++){
+      const result = results[result];
+      const html = formatResult(result.location, result.title, result.summary);
       search_results.insertAdjacentHTML('beforeend', html);
     }
   } else {
@@ -42,7 +39,7 @@ function displayResults (results) {
 }
 
 function doSearch () {
-  var query = document.getElementById('mkdocs-search-query').value;
+  const query = document.getElementById('mkdocs-search-query').value;
   if (query.length > 2) {
     if (!window.Worker) {
       displayResults(search(query));
@@ -53,14 +50,21 @@ function doSearch () {
     // Clear results for short queries
     displayResults([]);
   }
+  query.length > 2
+  ? (
+      !window.Worker
+        ? displayResults(search(query)
+        : searchWorker.postMessage({query: query})
+    )
+  : displayResults([]); 
 }
 
 function initSearch () {
-  var search_input = document.getElementById('mkdocs-search-query');
+  const search_input = document.getElementById('mkdocs-search-query');
   if (search_input) {
     search_input.addEventListener("keyup", doSearch);
   }
-  var term = getSearchTermFromLocation();
+  const term = getSearchTermFromLocation();
   if (term) {
     search_input.value = term;
     doSearch();
@@ -90,7 +94,7 @@ if (!window.Worker) {
   });
 } else {
   // Wrap search in a web worker
-  var searchWorker = new Worker(joinUrl(base_url, "search/worker.js"));
+  const searchWorker = new Worker(joinUrl(base_url, "search/worker.js"));
   searchWorker.postMessage({init: true});
   searchWorker.onmessage = onWorkerMessage;
 }
